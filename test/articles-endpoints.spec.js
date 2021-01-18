@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const knex = require("knex");
+const supertest = require("supertest");
 const app = require("../src/app");
 const { makeArticlesArray } = require("./articles.fixtures");
 
@@ -61,6 +62,30 @@ describe.only("Articles Endpoints", function () {
           .get(`/articles/${articleId}`)
           .expect(200, expectedArticle);
       });
+    });
+  });
+  describe.only(`POST /articles`, () => {
+    it(`creates an article, responding with 201 and the new article`, function () {
+      const newArticle = {
+        title: "Test new article",
+        style: "Listicle",
+        content: "Test new article content...",
+      };
+      return supertest(app)
+        .post("/articles")
+        .send(newArticle)
+        .expect(201)
+        .expect((res) => {
+          expect(res.body.title).to.eql(newArticle.title);
+          expect(res.body.style).to.eql(newArticle.style);
+          expect(res.body.content).to.eql(newArticle.content);
+          expect(res.body).to.have.property("id");
+        })
+        .then((postRes) =>
+          supertest(app)
+            .get(`/articles/${postRes.body.id}`)
+            .expect(postRes.body)
+        );
     });
   });
 });
