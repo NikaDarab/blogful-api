@@ -244,6 +244,29 @@ describe("Articles Endpoints", function () {
             },
           });
       });
+      it(`responds with 204 when updating only a subset of fields`, () => {
+        const idToUpdate = 2;
+        const updateArticle = {
+          title: "updated article title",
+        };
+        const expectedArticle = {
+          ...testArticles[idToUpdate - 1],
+          ...updateArticle,
+        };
+
+        return supertest(app)
+          .patch(`/api/articles/${idToUpdate}`)
+          .send({
+            ...updateArticle,
+            fieldToIgnore: "should not be in GET response",
+          })
+          .expect(204)
+          .then((res) =>
+            supertest(app)
+              .get(`/api/articles/${idToUpdate}`)
+              .expect(expectedArticle)
+          );
+      });
     });
   });
 });
